@@ -59,7 +59,7 @@ local init = function()
                 return a > b
             end)
 
-            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, botline_guess)
+            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, botline_guess + 1)
 
             local highlight = config.highlight
             if type(highlight) == "string" then
@@ -75,11 +75,11 @@ local init = function()
                 for j, column in ipairs(colorcolumn) do
                     local width = vim.api.nvim_win_call(win, function()
                         ---@diagnostic disable-next-line
-                        return vim.fn.virtcol { i, "$" } - 1
+                        return vim.fn.virtcol { i + 1, "$" } - 1
                     end)
                     if width < column then
                         local column_index = #colorcolumn - j + 1
-                        pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i - 1, 0, {
+                        pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i, 0, {
                             virt_text = {
                                 {
                                     utils.tbl_get_index(char, column_index),
@@ -95,10 +95,10 @@ local init = function()
                 end
                 local fold_end = vim.api.nvim_win_call(win, function()
                     ---@diagnostic disable-next-line: redundant-return-value
-                    return vim.fn.foldclosedend(i)
+                    return vim.fn.foldclosedend(i + 1)
                 end)
                 if fold_end ~= -1 then -- line is folded
-                    i = fold_end
+                    i = fold_end - 1
                 end
                 i = i + 1
             end

@@ -166,6 +166,35 @@ M.setup_buffer = function(bufnr, config)
     assert(M.initialized, "Tried to setup buffer without doing global setup")
     bufnr = utils.get_bufnr(bufnr)
     conf.set_buffer_config(bufnr, config)
+
+    M.refresh(bufnr)
+end
+
+--- Refreshes virt-column in all buffers
+M.refresh_all = function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        vim.api.nvim_win_call(win, function()
+            M.refresh(vim.api.nvim_win_get_buf(win) --[[@as number]])
+        end)
+    end
+end
+
+--- Refreshes virt-column in one buffer
+---
+---@param bufnr number
+M.refresh = function(bufnr)
+    assert(M.initialized, "Tried to refresh without doing setup")
+    if vim.fn.has "nvim-0.10.0" then
+        bufnr = utils.get_bufnr(bufnr)
+        vim.api.nvim__redraw {
+            buf = bufnr,
+            valid = true,
+            statuscolumn = false,
+            statusline = false,
+            winbar = false,
+            tabline = false,
+        }
+    end
 end
 
 return M

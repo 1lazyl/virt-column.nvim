@@ -1,3 +1,19 @@
+# 🚸 Notice
+
+This branch is:
+
+1. A fork of the original [virt-column.nvim](https://github.com/lukas-reineke/virt-column.nvim) + additional
+   changes from the other branches not yet merged to upstream.
+
+2. **Rebased** with upstream and **force-pushed** whenever new changes
+   are introduced in the other branches.
+
+3. Expected to have conflicts and cause headaches when pulled or fetched.
+
+4. **AS IS**, use it at your own risk, [here be dragons](https://en.wikipedia.org/wiki/Here_be_dragons).
+
+---
+
 # virt-column.nvim
 
 Display a character as the colorcolumn.

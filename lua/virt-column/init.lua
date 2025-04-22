@@ -56,8 +56,12 @@ local init = function()
             end
 
             table.sort(colorcolumn, function(a, b)
-                return a > b
+                return a < b
             end)
+
+            if config.count > 0 then
+                colorcolumn = { unpack(colorcolumn, 1, math.min(config.count, #colorcolumn)) }
+            end
 
             pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, botline_guess + 1)
 
@@ -72,18 +76,18 @@ local init = function()
 
             local i = topline
             while i <= botline_guess do
-                for j, column in ipairs(colorcolumn) do
+                for j = #colorcolumn, 1, -1 do
+                    local column = colorcolumn[j]
                     local width = vim.api.nvim_win_call(win, function()
                         ---@diagnostic disable-next-line
                         return vim.fn.virtcol { i + 1, "$" } - 1
                     end)
                     if width < column then
-                        local column_index = #colorcolumn - j + 1
                         pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i, 0, {
                             virt_text = {
                                 {
-                                    utils.tbl_get_index(char, column_index),
-                                    utils.tbl_get_index(highlight, column_index),
+                                    utils.tbl_get_index(char, j),
+                                    utils.tbl_get_index(highlight, j),
                                 },
                             },
                             virt_text_pos = "overlay",
@@ -91,6 +95,8 @@ local init = function()
                             virt_text_win_col = column - 1 - leftcol,
                             priority = 1,
                         })
+                    else
+                        break
                     end
                 end
                 local fold_end = vim.api.nvim_win_call(win, function()

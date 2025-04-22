@@ -21,6 +21,7 @@ M.default_config = {
     char = "┃",
     virtcolumn = "",
     highlight = "NonText",
+    count = -1,
     exclude = {
         filetypes = {
             "lspinfo",
@@ -66,6 +67,7 @@ local validate_config = function(config)
         char = { config.char, { "string", "table" }, true },
         virtcolumn = { config.virtcolumn, "string", true },
         highlight = { config.highlight, { "string", "table" }, true },
+        count = { config.count, "number", true },
         exclude = { config.exclude, "table", true },
     }
 

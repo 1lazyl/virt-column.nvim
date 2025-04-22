@@ -134,6 +134,12 @@ config                                                    *virt-column.config*
 
                    Default: |hl-NonText| ~
 
+                                                    *virt-column.config.count*
+   • {count}       (number)
+                   Number of screen column to display
+
+                   Default: `-1` ~
+
    • {exclude}     (|virt-column.config.exclude|)
                    Configures what is excluded from virt-column
 

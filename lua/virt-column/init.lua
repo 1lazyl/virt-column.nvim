@@ -87,7 +87,7 @@ local init = function()
                         ---@diagnostic disable-next-line
                         return vim.fn.virtcol { i + 1, "$" } - 1
                     end)
-                    if width < column then
+                    if width < column and column - 1 - leftcol >= 0 then
                         pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i, 0, {
                             virt_text = {
                                 {
@@ -120,23 +120,32 @@ local init = function()
                 local virt_lines_table = {}
 
                 local line_content = {}
-                local last_column = 0
+                local last_vis = -1
                 for j, column in ipairs(colorcolumn) do
-                    table.insert(line_content, {
-                        string.rep(" ", column - 1 - last_column) .. utils.tbl_get_index(char, j),
-                        utils.tbl_get_index(highlight, j),
+                    local vis_col = column - leftcol - 1
+                    if vis_col >= 0 then
+                        local space_count = vis_col - last_vis - 1
+                        if space_count < 0 then
+                            space_count = 0
+                        end
+                        table.insert(line_content, {
+                            string.rep(" ", space_count) .. utils.tbl_get_index(char, j),
+                            utils.tbl_get_index(highlight, j),
+                        })
+                        last_vis = vis_col
+                    end
+                end
+
+                if #line_content > 0 then
+                    for _ = 1, empty_lines_count do
+                        table.insert(virt_lines_table, line_content)
+                    end
+
+                    pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, buf_line_count - 1, 0, {
+                        virt_lines = virt_lines_table,
+                        virt_lines_above = false,
                     })
-                    last_column = column
                 end
-
-                for _ = 1, empty_lines_count do
-                    table.insert(virt_lines_table, line_content)
-                end
-
-                pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, buf_line_count - 1, 0, {
-                    virt_lines = virt_lines_table,
-                    virt_lines_above = false,
-                })
             end
         end,
     })

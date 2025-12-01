@@ -85,6 +85,19 @@ setup_buffer({bufnr}, {config})                   *virt-column.setup_buffer()*
    • {bufnr}   (number) Buffer number (0 for current buffer)
    • {config}  (|virt-column.config|?) Configuration table
 
+
+refresh_all()                                      *virt-column.refresh_all()*
+
+ Refreshses virt-column in all buffers
+
+
+refresh({bufnr})                                       *virt-column.refresh()*
+
+ Refreshses virt-column in one buffer
+
+ Parameters: ~
+   • {bufnr}   (number) Buffer number (0 for current buffer)
+
 ==============================================================================
  3. TYPES                                                  *virt-column.types*
 
@@ -120,6 +133,12 @@ config                                                    *virt-column.config*
                    get applied to the virtual column
 
                    Default: |hl-NonText| ~
+
+                                                    *virt-column.config.count*
+   • {count}       (number)
+                   Number of screen column to display
+
+                   Default: `-1` ~
 
    • {exclude}     (|virt-column.config.exclude|)
                    Configures what is excluded from virt-column

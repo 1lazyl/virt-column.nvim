@@ -56,10 +56,19 @@ local init = function()
             end
 
             table.sort(colorcolumn, function(a, b)
-                return a > b
+                return a < b
             end)
 
-            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, botline_guess)
+            if config.count > 0 then
+                colorcolumn = { unpack(colorcolumn, 1, math.min(config.count, #colorcolumn)) }
+            end
+
+            -- Get actual window height and buffer line count for full coverage
+            local win_height = vim.api.nvim_win_get_height(win)
+            local buf_line_count = vim.api.nvim_buf_line_count(bufnr)
+            local botline = topline + win_height
+
+            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, math.max(botline, buf_line_count))
 
             local highlight = config.highlight
             if type(highlight) == "string" then
@@ -71,19 +80,19 @@ local init = function()
             end
 
             local i = topline
-            while i <= botline_guess do
-                for j, column in ipairs(colorcolumn) do
+            while i <= math.min(botline, buf_line_count) do
+                for j = #colorcolumn, 1, -1 do
+                    local column = colorcolumn[j]
                     local width = vim.api.nvim_win_call(win, function()
                         ---@diagnostic disable-next-line
-                        return vim.fn.virtcol { i, "$" } - 1
+                        return vim.fn.virtcol { i + 1, "$" } - 1
                     end)
                     if width < column then
-                        local column_index = #colorcolumn - j + 1
-                        pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i - 1, 0, {
+                        pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, i, 0, {
                             virt_text = {
                                 {
-                                    utils.tbl_get_index(char, column_index),
-                                    utils.tbl_get_index(highlight, column_index),
+                                    utils.tbl_get_index(char, j),
+                                    utils.tbl_get_index(highlight, j),
                                 },
                             },
                             virt_text_pos = "overlay",
@@ -91,16 +100,43 @@ local init = function()
                             virt_text_win_col = column - 1 - leftcol,
                             priority = 1,
                         })
+                    else
+                        break
                     end
                 end
                 local fold_end = vim.api.nvim_win_call(win, function()
                     ---@diagnostic disable-next-line: redundant-return-value
-                    return vim.fn.foldclosedend(i)
+                    return vim.fn.foldclosedend(i + 1)
                 end)
                 if fold_end ~= -1 then -- line is folded
-                    i = fold_end
+                    i = fold_end - 1
                 end
                 i = i + 1
+            end
+
+            -- If there are empty lines below buffer content, add virt_lines from the last buffer line
+            local empty_lines_count = botline - buf_line_count
+            if botline > buf_line_count and buf_line_count > 0 and empty_lines_count > 0 then
+                local virt_lines_table = {}
+
+                local line_content = {}
+                local last_column = 0
+                for j, column in ipairs(colorcolumn) do
+                    table.insert(line_content, {
+                        string.rep(" ", column - 1 - last_column) .. utils.tbl_get_index(char, j),
+                        utils.tbl_get_index(highlight, j),
+                    })
+                    last_column = column
+                end
+
+                for _ = 1, empty_lines_count do
+                    table.insert(virt_lines_table, line_content)
+                end
+
+                pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, buf_line_count - 1, 0, {
+                    virt_lines = virt_lines_table,
+                    virt_lines_above = false,
+                })
             end
         end,
     })
@@ -166,6 +202,35 @@ M.setup_buffer = function(bufnr, config)
     assert(M.initialized, "Tried to setup buffer without doing global setup")
     bufnr = utils.get_bufnr(bufnr)
     conf.set_buffer_config(bufnr, config)
+
+    M.refresh(bufnr)
+end
+
+--- Refreshes virt-column in all buffers
+M.refresh_all = function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        vim.api.nvim_win_call(win, function()
+            M.refresh(vim.api.nvim_win_get_buf(win) --[[@as number]])
+        end)
+    end
+end
+
+--- Refreshes virt-column in one buffer
+---
+---@param bufnr number
+M.refresh = function(bufnr)
+    assert(M.initialized, "Tried to refresh without doing setup")
+    if vim.fn.has "nvim-0.10.0" then
+        bufnr = utils.get_bufnr(bufnr)
+        vim.api.nvim__redraw {
+            buf = bufnr,
+            valid = true,
+            statuscolumn = false,
+            statusline = false,
+            winbar = false,
+            tabline = false,
+        }
+    end
 end
 
 return M

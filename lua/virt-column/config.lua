@@ -21,6 +21,7 @@ M.default_config = {
     char = "┃",
     virtcolumn = "",
     highlight = "NonText",
+    count = -1,
     exclude = {
         filetypes = {
             "lspinfo",
@@ -40,14 +41,14 @@ M.default_config = {
 local validate_char = function(char)
     if type(char) == "string" then
         local length = vim.fn.strdisplaywidth(char)
-        return length <= 1, string.format("'%s' has a dispaly width of %d", char, length)
+        return length > 0, string.format("'%s' has a display width of %d", char, length)
     else
         if #char == 0 then
             return false, "table is empty"
         end
         for i, c in ipairs(char) do
             local length = vim.fn.strdisplaywidth(c)
-            if length > 1 then
+            if length < 1 then
                 return false, string.format("index %d '%s' has a display width of %d", i, c, length)
             end
         end
@@ -66,6 +67,7 @@ local validate_config = function(config)
         char = { config.char, { "string", "table" }, true },
         virtcolumn = { config.virtcolumn, "string", true },
         highlight = { config.highlight, { "string", "table" }, true },
+        count = { config.count, "number", true },
         exclude = { config.exclude, "table", true },
     }
 
@@ -74,7 +76,7 @@ local validate_config = function(config)
             char = {
                 config.char,
                 validate_char,
-                "char to have a display width of 0 or 1",
+                "char to be a table or non-empty string",
             },
         }
     end

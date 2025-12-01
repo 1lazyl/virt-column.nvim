@@ -12,6 +12,8 @@
 ---@field virtcolumn string?
 --- Highlight group, or list of highlight groups, that get applied to the virtual column
 ---@field highlight string|string[]?
+--- Number of screen column to display
+---@field count number?
 --- Configures what is excluded from virt-column
 ---@field exclude virtcolumn.config.exclude?
 
@@ -32,6 +34,8 @@
 ---@field virtcolumn string
 --- Highlight group, or list of highlight groups, that get applied to the virtual column
 ---@field highlight string|string[]
+--- Number of screen column to display
+---@field count number
 --- Configures what is excluded from virt-column
 ---@field exclude virtcolumn.config.exclude.full
 

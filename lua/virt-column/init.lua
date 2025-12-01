@@ -63,7 +63,12 @@ local init = function()
                 colorcolumn = { unpack(colorcolumn, 1, math.min(config.count, #colorcolumn)) }
             end
 
-            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, botline_guess + 1)
+            -- Get actual window height and buffer line count for full coverage
+            local win_height = vim.api.nvim_win_get_height(win)
+            local buf_line_count = vim.api.nvim_buf_line_count(bufnr)
+            local botline = topline + win_height
+
+            pcall(vim.api.nvim_buf_clear_namespace, bufnr, M.namespace, topline, math.max(botline, buf_line_count))
 
             local highlight = config.highlight
             if type(highlight) == "string" then
@@ -75,7 +80,7 @@ local init = function()
             end
 
             local i = topline
-            while i <= botline_guess do
+            while i <= math.min(botline, buf_line_count) do
                 for j = #colorcolumn, 1, -1 do
                     local column = colorcolumn[j]
                     local width = vim.api.nvim_win_call(win, function()
@@ -107,6 +112,31 @@ local init = function()
                     i = fold_end - 1
                 end
                 i = i + 1
+            end
+
+            -- If there are empty lines below buffer content, add virt_lines from the last buffer line
+            local empty_lines_count = botline - buf_line_count
+            if botline > buf_line_count and buf_line_count > 0 and empty_lines_count > 0 then
+                local virt_lines_table = {}
+
+                local line_content = {}
+                local last_column = 0
+                for j, column in ipairs(colorcolumn) do
+                    table.insert(line_content, {
+                        string.rep(" ", column - 1 - last_column) .. utils.tbl_get_index(char, j),
+                        utils.tbl_get_index(highlight, j),
+                    })
+                    last_column = column
+                end
+
+                for _ = 1, empty_lines_count do
+                    table.insert(virt_lines_table, line_content)
+                end
+
+                pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, buf_line_count - 1, 0, {
+                    virt_lines = virt_lines_table,
+                    virt_lines_above = false,
+                })
             end
         end,
     })

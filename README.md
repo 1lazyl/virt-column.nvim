@@ -1,51 +1,40 @@
-# 🚸 Notice
-
-This branch is:
-
-1. A fork of the original [virt-column.nvim](https://github.com/lukas-reineke/virt-column.nvim) + additional
-   changes from the other branches not yet merged to upstream.
-
-2. **Rebased** with upstream and **force-pushed** whenever new changes
-   are introduced in the other branches.
-
-3. Expected to have conflicts and cause headaches when pulled or fetched.
-
-4. **AS IS**, use it at your own risk, [here be dragons](https://en.wikipedia.org/wiki/Here_be_dragons).
-
----
-
 # virt-column.nvim
 
 Display a character as the colorcolumn.
 
-<img width="900" src="https://user-images.githubusercontent.com/12900252/143544703-d94d6e9e-75f8-407d-976e-0fd5b341d751.png" alt="Screenshot" />
+## Difference between the original [virt-column](https://github.com/IronGeek/virt-column.nvim) and this virt-column
+
+- Fix the virtual line would display even at index < 0.
+  (Fix a visual bug on horizontal scroll)
+- Extend the virtual line to the whole visual space.
+- Above feature works on multiple columns. (fix from [another fork](https://github.com/FY0u11/virt-column.nvim/))
 
 ## Install
 
-Use your favourite plugin manager to install.
-
 For [lazy.nvim](https://github.com/folke/lazy.nvim):
+Create a .lua file in ~/.config/nvim/lua/plugins/ and apply below content
 
 ```lua
-{ "lukas-reineke/virt-column.nvim", opts = {} },
+return {
+  {
+    "1lazyl/virt-column.nvim",
+    ---@module "virt-column"
+    ---@type virtcolumn.config
+    opts = {
+      enabled = true,
+
+      -- for multiple columns with different characters, use ["|", "│"]
+      char = "│",
+
+      -- comma separated list of column numbers where vertical lines appear
+      virtcolumn = "100,120",
+
+      -- table of highlight group names to style each vertical line
+      highlight = { "VirtColumn", "VirtColumn2" },
+    },
+    lazy = true,
+    event = "VeryLazy",
+  },
+}
 ```
 
-For [pckr.nvim](https://github.com/lewis6991/pckr.nvim):
-
-```lua
-use "lukas-reineke/virt-column.nvim"
-```
-
-## Setup
-
-To configure virt-column.nvim you need to run the setup function.
-
-```lua
-require("virt-column").setup()
-```
-
-Please see `:help virt-column.txt` for more details and all possible values.
-
-## Thanks
-
-Thank you @francium for the idea.

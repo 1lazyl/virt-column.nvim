@@ -2,7 +2,7 @@
 
 Display a character as the colorcolumn.
 
-## Difference between the original [virt-column](https://github.com/IronGeek/virt-column.nvim) and this virt-column
+## Difference between the forked [virt-column](https://github.com/IronGeek/virt-column.nvim) and this virt-column
 
 - Fix the virtual line would display even at index < 0.
   (Fix a visual bug on horizontal scroll)

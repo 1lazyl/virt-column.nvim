@@ -141,9 +141,10 @@ local init = function()
                         table.insert(virt_lines_table, line_content)
                     end
 
-                    pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, buf_line_count - 1, 0, {
+                    local target_line = buf_line_count
+                    pcall(vim.api.nvim_buf_set_extmark, bufnr, M.namespace, target_line, 0, {
                         virt_lines = virt_lines_table,
-                        virt_lines_above = false,
+                        virt_lines_above = true,
                     })
                 end
             end
